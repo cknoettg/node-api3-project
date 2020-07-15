@@ -1,9 +1,11 @@
 // code away!
-require('dotenv').config();
-const server = require('./server.js');
+const express = require("express");
 
-const port = process.env.PORT;
+const server = express()
+const port = 5000
+
+server.use(express.json());
 
 server.listen(port, () => {
-  console.log(`\n* Server Running on http://localhost:${port} *\n`);
-});
+    console.log(`Server is running at http://localhost:${port} ...`)
+})
