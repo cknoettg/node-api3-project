@@ -4,6 +4,7 @@ const Posts = require('./postDb');
 
 const router = express.Router();
 
+//may have to use req.params.id
 router.get('/', (req, res) => {
   Posts.get(req.query)
   .then(posts => {
@@ -42,7 +43,7 @@ router.delete('/:id', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  Posts.update(req.params.id, req.body)
+  Posts.update(req.id, req.body)
   .then(post => {
     res.status(200).json(post)
   })

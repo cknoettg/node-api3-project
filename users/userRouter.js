@@ -5,6 +5,7 @@ const Posts = require("../posts/postDb");
 
 const router = express.Router();
 
+//may have to use req.params.id
 router.post('/', (req, res) => {
   Users.insert(req.body)
   .then(user => {
