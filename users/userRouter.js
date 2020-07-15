@@ -1,36 +1,89 @@
 const express = require('express');
 //add dependencies
-const userDb = require("./userDb");
-const postDb = require("../posts/postDb");
+const Users = require("./userDb");
+const Posts = require("../posts/postDb");
 
 const router = express.Router();
 
 router.post('/', (req, res) => {
-  // do your magic!
+  Users.insert(req.body)
+  .then(user => {
+    res.status(201).json(user);
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json({error: err.message})
+  })
 });
 
 router.post('/:id/posts', (req, res) => {
-  // do your magic!
+  const postInfo = {...req.body, user_id: req.id}
+  Posts.insert(postInfo)
+  .then(post => {
+    res.status(201).json(post)
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json({error: err.message})
+  })
 });
 
 router.get('/', (req, res) => {
-  // do your magic!
+  Users.get(req.query)
+  .then(users => {
+    res.status(200).json(users);
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json({error: err.message})
+  })
 });
 
 router.get('/:id', (req, res) => {
-  // do your magic!
+  Users.getById(req.id)
+  .then(user => {
+    if (user) {
+      res.status(200).json(user)
+    } else {
+      res.status(404).json({error: err.message})
+    }
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json({error: err.message})
+  })
 });
 
 router.get('/:id/posts', (req, res) => {
-  // do your magic!
+  Users.getUserPosts(req.id)
+  .then(posts => {
+    res.status(200).json(posts);
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json({error: err.message})
+  })
 });
 
 router.delete('/:id', (req, res) => {
-  // do your magic!
+  Users.remove(req.id)
+  .then(user => {
+    res.status(200).json(user)
+  })
+  .catch(err => {
+    res.status(500).json({error: err.messsage})
+  })
 });
 
 router.put('/:id', (req, res) => {
-  // do your magic!
+  Users.update(req.id, req.body)
+  .then(user => {
+    res.status(200).json(user)
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json({error: err.message})
+  })
 });
 
 //custom middleware
