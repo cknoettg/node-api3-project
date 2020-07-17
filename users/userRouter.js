@@ -2,6 +2,7 @@ const express = require('express');
 //add dependencies
 const Users = require("./userDb");
 const Posts = require("../posts/postDb");
+//var knex = require('knex')(config);
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.post('/', (req, res) => {
 });
 
 router.post('/:id/posts', (req, res) => {
-  const postInfo = {...req.body, user_id: req.id}
+  const postInfo = {...req.body, user_id: req.params.id}
   Posts.insert(postInfo)
   .then(post => {
     res.status(201).json(post)
@@ -40,23 +41,12 @@ router.get('/', (req, res) => {
   })
 });
 
-router.get('/:id', (req, res) => {
-  Users.getById(req.id)
-  .then(user => {
-    if (user) {
-      res.status(200).json(user)
-    } else {
-      res.status(404).json({error: err.message})
-    }
-  })
-  .catch(err => {
-    console.log(err);
-    res.status(500).json({error: err.message})
-  })
+router.get('/:id', validateUserId, (req, res, next) => {
+  res.status(200).json(req.user);
 });
 
-router.get('/:id/posts', (req, res) => {
-  Users.getUserPosts(req.id)
+router.get('/:id/posts', validateUserId, validatePost, (req, res, next) => {
+  Users.getUserPosts(req.params.id)
   .then(posts => {
     res.status(200).json(posts);
   })
@@ -67,7 +57,7 @@ router.get('/:id/posts', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  Users.remove(req.id)
+  Users.remove(req.params.id)
   .then(user => {
     res.status(200).json(user)
   })
@@ -76,26 +66,38 @@ router.delete('/:id', (req, res) => {
   })
 });
 
-router.put('/:id', (req, res) => {
-  Users.update(req.id, req.body)
-  .then(user => {
-    res.status(200).json(user)
-  })
-  .catch(err => {
-    console.log(err);
-    res.status(500).json({error: err.message})
-  })
+router.put('/:id', validateUserId, (req, res) => {
+  Users.update(req.user.id, req.body)
+    .then(confirmation => {
+      if (confirmation > 0) {
+        res.status(201).json({ message: "User was successfully updated." });
+      } else {
+        res.status(500).json({ error: "There was an error updating the user." });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({ error: "There was an error updating the user." });
+    });
 });
 
 //custom middleware
 
 function validateUserId(req, res, next) {
-  if(req.id) {
-    req.user = req.id;
-    next();
-  } else {
-    res.status(400).json({message: "invalid user id"})
-  }
+  Users.getById(req.params.id)
+    .then(user => {
+      if(user && user.id) {
+        req.user = user;
+        console.log(user);
+        next();
+      } else {
+        console.log("Error");
+        res.status(400).json({  message: "Invalid user id." });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({error: err.message})
+    })
 }
 
 function validateUser(req, res, next) {
